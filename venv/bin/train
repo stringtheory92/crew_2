@@ -1,0 +1,6 @@
+#!/Users/adamkabak/Development/crew_2/venv/bin/python
+import sys
+from crew_2.main import train
+
+if __name__ == '__main__':
+    sys.exit(train())
