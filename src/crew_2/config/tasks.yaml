@@ -1,15 +1,15 @@
-research_task:
+analyze_task:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is 2024.
+    Analyze un-analyzed links in the ai_articles database's articles table. Gather all relevant information about AI/ML features and products.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
+    Compile the information into JSON format: { product { product_details, features { feature_name { feature_details } } } }. If there's an issue seeing the text from the the website, please say so.
 
-reporting_task:
+update_database_task:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    Update the database with any new (not existing in the database) products, product details, features, or feature details. 
+    For a new product/feature, insert a new row for the new product/feature in the relevant table
+    For new product_details and feature_details for features/products already in the database, insert a new row in the database for each new detail in the relevant table.
   expected_output: >
-    A fully fledge reports with the mains topics, each with a full section of information.
-    Formated as markdown with out '```'
+    The output should be a confirmation that the database was updated (unless there was an issue updating the database completely - in that case, inform of the issue and try again), accompanied by the JSON object in the format: { product { product_details, features { feature_name { feature_details  }  }  }  } that was used to update the database
+  context: >
+    analyze_task

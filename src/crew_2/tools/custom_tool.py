@@ -1,12 +1,20 @@
 from crewai_tools import BaseTool
+from crew_2.db_sqlite import DBHandler
 
 
-class MyCustomTool(BaseTool):
-    name: str = "Name of my tool"
+class GetAllArticleLinksTool(BaseTool):
+    name: str = "Get All Article Links Tool"
     description: str = (
-        "Clear description for what this tool is useful for, you agent will need this information to use it."
+        "Fetches all article links from the database."
     )
 
-    def _run(self, argument: str) -> str:
-        # Implementation goes here
-        return "this is an example of a tool output, ignore it and move along."
+    def _run(self) -> list:
+        db = DBHandler()
+        query = "SELECT DISTINCT link FROM articles LIMIT 5"
+        links = db.fetch_all(query)
+        db.close()
+        return [link[0] for link in links]
+
+if __name__ == "__main__":
+    tool = GetAllArticleLinksTool()
+    print(tool._run())
