@@ -2,7 +2,8 @@ from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from crewai_tools import ScrapeWebsiteTool, WebsiteSearchTool
 from .tools.custom_tool import GetArticleLinkTool
-from openai import Client
+from langchain_anthropic import ChatAnthropic
+
 # from .tools.custom_tool import GetUnanalyzedArticleLinksTool
 
 # https://github.com/alejandro-ao/exa-crewai/blob/master/src/newsletter_gen/config/tasks.yaml
@@ -11,14 +12,11 @@ website_search_tool = WebsiteSearchTool()
 # get_unanalyzed_article_links_tool = GetUnanalyzedArticleLinksTool()
 get_article_link_tool = GetArticleLinkTool()
 
-assistant = Client.create(
-        name=f"temperature_test_assistant",
-        instructions="",
-        model='gpt-4o',
-        # tools=[{"type": "code_interpreter"}],
-        temperature=0.0,
-        
-    )
+haiku = "claude-3-haiku-20240307"
+Consistent = ChatAnthropic(
+    temperature=0.0,
+    model=haiku
+)
 url = 'https://news.google.com/articles/CBMiWWh0dHBzOi8vd3d3LnZveC5jb20vZnV0dXJlLXBlcmZlY3QvMzYxNzQ5L3VuaXZlcnNhbC1iYXNpYy1pbmNvbWUtc2FtLWFsdG1hbi1vcGVuLWFpLXN0dWR50gEA?hl=en-US&gl=US&ceid=US%3Aen'
 
 database_query_specialist = Agent(
@@ -28,8 +26,27 @@ database_query_specialist = Agent(
     verbose=True,
     allow_delegations=False,
     tools=[get_article_link_tool],
-    llm=assistant
+    llm=Consistent
 )
+
+scraper_agent = Agent(
+    role="Article Scraper",
+    goal="Access the web page at the URL provided to you and use the provided 'web_scraper_tool' to fetch the text from that page.",
+    backstory="Your only tasks are to follow the URL provided, read and return all text from the page at that URL. Do not return partial text. Do not return anything but the article text.",
+    verbose=True,
+    allow_delegations=False,
+    tools=[web_scraper_tool],
+    llm=Consistent
+)
+# scraper_agent = Agent(
+#     role="Article Scraper",
+#     goal="Access the web page at the URL provided to you and use the provided web_scraper_tool to fetch the text from that page. Only use the tool.",
+#     backstory="Your only tasks are to follow the URL provided and execute the 'web_scraper_tool' you have access to on the web page at that URL. Do not perform any other actions, or generate any other text. Simply use the tool.",
+#     verbose=True,
+#     allow_delegations=False,
+#     tools=[web_scraper_tool],
+#     llm=Consistent
+# )
 
 query_task = Task(
     description="""Use the provided get_article_link_tool to find the article link from the database.
@@ -38,9 +55,26 @@ query_task = Task(
     expected_output='A valid article URL.',
     agent=database_query_specialist,
 )
+scrape_article_task = Task(
+    description="""A URL will be provided to you by the database_query_specialist. Access the website at the URL provided to you. Read the website and fetch the text from the given URL and return ALL TEXT.
+    DO NOT DELEGATE THIS TASK TO ANYONE. ONLY OUTPUT THE TEXT RETURNED FROM THE TOOL. DO NOT GENERATE ANY OTHER TEXT. 
+    DO NOT ADD ANY FORMATTING. DO NOT RETURN PARTIAL TEXT FROM THE TOOL. SIMPLY OUTPUT ALL THE TEXT RETURNED FROM THE TOOL.""",
+    expected_output='The FULL PAGE text.',
+    agent=scraper_agent,
+    context=[query_task],  # Ensure the context includes the first task to get the URL
+)
+# scrape_article_task = Task(
+#     description="""A URL will be provided to you by the database_query_specialist. Access the website at the URL provided to you. Use the provided web_scraper_tool to fetch the scraped text from the given URL and return ALL SCRAPED TEXT.
+#     DO NOT DELEGATE THIS TASK TO ANYONE. ONLY OUTPUT THE TEXT RETURNED FROM THE TOOL. DO NOT GENERATE ANY OTHER TEXT. 
+#     DO NOT ADD ANY FORMATTING. DO NOT RETURN PARTIAL TEXT FROM THE TOOL. SIMPLY OUTPUT ALL THE TEXT RETURNED FROM THE TOOL.""",
+#     expected_output='The FULL PAGE text.',
+#     agent=scraper_agent,
+#     context=[query_task],  # Ensure the context includes the first task to get the URL
+# )
+
 crew = Crew(
-    agents=[database_query_specialist],
-    tasks=[query_task],
+    agents=[database_query_specialist, scraper_agent],
+    tasks=[query_task, scrape_article_task],
     verbose=True
 )
 	

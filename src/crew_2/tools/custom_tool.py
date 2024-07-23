@@ -16,9 +16,9 @@ class GetUnanalyzedArticleLinksTool(BaseTool):
         return [link[0] for link in links]
     
 class GetArticleLinkTool(BaseTool):
-    name: str = "Get All Article Links Tool"
+    name: str = "Get Article Link Tool"
     description: str = (
-        "Fetches all article links from the database."
+        "Fetches 1 article link from the database."
     )
 
     def _run(self) -> list:

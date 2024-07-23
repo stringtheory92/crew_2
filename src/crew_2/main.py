@@ -9,25 +9,21 @@ import os
 from crew_2.crew import crew
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
-# Load model directly
-import torch
-import transformers
-# from transformers import AutoTokenizer, AutoModelForCausalLM
+
+
 
 
 load_dotenv()
 # app = FastAPI()
 
-
-
+from anthropic import Anthropic
+client = Anthropic()
 
 def run():
 
     inputs = {
         'topic': 'AI LLMs'
     }
-    print(os.getenv("OPENAI_API_BASE"))
-    print(os.getenv("OPENAI_API_KEY"))
 
     # Crew2Crew().crew().kickoff(inputs=inputs)
     return crew.kickoff()
