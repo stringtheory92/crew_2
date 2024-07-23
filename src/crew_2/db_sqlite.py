@@ -24,6 +24,15 @@ class DBHandler:
                 )
             ''')
             self.conn.execute('''
+                CREATE TABLE IF NOT EXISTS ProductDetails (
+                    product_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    product_id INTEGER,
+                    detail_name TEXT NOT NULL,
+                    detail_value TEXT,
+                    FOREIGN KEY (product_id) REFERENCES Products(product_id)
+                )
+            ''')
+            self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS Features (
                     feature_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     product_id INTEGER,
@@ -34,7 +43,7 @@ class DBHandler:
             ''')
             self.conn.execute('''
                 CREATE TABLE IF NOT EXISTS FeatureDetails (
-                    detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    feature_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     feature_id INTEGER,
                     detail_name TEXT NOT NULL,
                     detail_value TEXT,

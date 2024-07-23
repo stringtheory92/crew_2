@@ -2,14 +2,12 @@ analyze_task:
   description: >
     Analyze un-analyzed links in the ai_articles database's articles table. Gather all relevant information about AI/ML features and products.
   expected_output: >
-    Compile the information into JSON format: { product { product_details, features { feature_name { feature_details } } } }. If there's an issue seeing the text from the the website, please say so.
+    Compile the information into JSON format: {{ product {{ product_details, features {{ feature_name {{ feature_details }} }} }} }}.
 
 update_database_task:
   description: >
-    Update the database with any new (not existing in the database) products, product details, features, or feature details. 
-    For a new product/feature, insert a new row for the new product/feature in the relevant table
+    Update the database with any new (not existing in the database) products, product details, features, or feature details.
+    For a new product/feature, insert a new row for the new product/feature in the relevant table.
     For new product_details and feature_details for features/products already in the database, insert a new row in the database for each new detail in the relevant table.
   expected_output: >
-    The output should be a confirmation that the database was updated (unless there was an issue updating the database completely - in that case, inform of the issue and try again), accompanied by the JSON object in the format: { product { product_details, features { feature_name { feature_details  }  }  }  } that was used to update the database
-  context: >
-    analyze_task
+    The output should be a confirmation that the database was updated (unless there was an issue updating the database completely - in that case, inform of the issue and try again), accompanied by the JSON object in the format: {{ product {{ product_details, features {{ feature_name {{ feature_details }} }} }} }} that was used to update the database.
