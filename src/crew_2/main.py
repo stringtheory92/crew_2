@@ -24,7 +24,7 @@ def run():
     inputs = {
         'topic': 'AI LLMs'
     }
-
+    print("running...")
     # Crew2Crew().crew().kickoff(inputs=inputs)
     return crew.kickoff()
 
@@ -39,3 +39,7 @@ def train():
 
     except Exception as e:
         raise Exception(f"An error occurred while training the crew: {e}")
+
+
+if __name__ == "__main__": 
+    run()
