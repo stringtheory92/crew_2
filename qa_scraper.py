@@ -100,7 +100,8 @@ DO_NOT_DOWNLOAD = ["Ketogenic Woman",
                     "My Interviews on Other Channels",
                     "🔴From Wheelchair to Walking: How Dr. Sarah Conquered Multiple Sclerosis (MS) With Her Diet!",
                     "Interviews on My Channel",
-                    "New interview with return guest Dr Pran Yoganathan! #shorts #short #fyp #nutrition #cancer"
+                    "New interview with return guest Dr Pran Yoganathan! #shorts #short #fyp #nutrition #cancer",
+                    "Ken Berry"
                    ]
 
 # Setup Chrome options for headless mode
@@ -131,6 +132,18 @@ def should_download_video(title: str, do_not_download_list: list) -> bool:
             return False
     return True
 
+def scroll_down(driver):
+    """Scroll down to the bottom of the page to load more videos."""
+    last_height = driver.execute_script("return document.documentElement.scrollHeight")
+    while True:
+        driver.execute_script("window.scrollTo(0, document.documentElement.scrollHeight);")
+        time.sleep(2)  # Adjust this to give the page time to load more content
+        new_height = driver.execute_script("return document.documentElement.scrollHeight")
+        if new_height == last_height:
+            # Stop scrolling when no new content loads
+            break
+        last_height = new_height
+
 def get_video_ids_and_titles_from_search(channel_url):
     """Scrapes video IDs and titles from the YouTube search results page using Selenium."""
     video_data = []
@@ -142,13 +155,8 @@ def get_video_ids_and_titles_from_search(channel_url):
         # Navigate to the search URL
         driver.get(channel_url)
         
-        # Wait until the video elements under the div with id "contents" are present
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.ID, "contents"))
-        )
-        
-        # Give some time for the JavaScript to load all videos
-        time.sleep(5)
+        # Scroll down to load more videos
+        scroll_down(driver)
         
         logger.debug("Successfully loaded the search page with Selenium.")
 
@@ -197,6 +205,9 @@ def save_transcript(video_title, transcript_text):
     logger.info(f"Transcript saved for: {video_title}")
 
 def main():
+    # Counter for successfully pulled transcripts
+    successful_transcripts = 0
+
     # Step 1: Get all video IDs and titles from the search results page
     videos = get_video_ids_and_titles_from_search(channel_url)
     
@@ -214,9 +225,14 @@ def main():
         
         # Fetch the transcript and save it if it's available
         transcript = fetch_transcript(video_id)
-        if transcript:
+        if transcript:  # Only save the transcript if it's successfully fetched
             save_transcript(video_title, transcript)
+            successful_transcripts += 1  # Increment counter for successful pulls
+        else:
+            logger.info(f"Skipping video '{video_title}' as transcript could not be fetched.")
     
+    # Log the total number of successfully pulled transcripts
+    logger.info(f"Total transcripts successfully pulled: {successful_transcripts}")
     logger.info("Script finished.")
 
 if __name__ == "__main__":
